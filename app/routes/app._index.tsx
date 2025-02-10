@@ -9,7 +9,6 @@ import {
   Button,
   BlockStack,
   Box,
-  List,
   Link,
   InlineStack,
 } from "@shopify/polaris";
@@ -24,9 +23,14 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const { admin } = await authenticate.admin(request);
-  const color = ["Red", "Orange", "Yellow", "Green"][
-    Math.floor(Math.random() * 4)
-  ];
+  const postNumber = Math.floor(Math.random() * 100);
+
+  const postData = await fetch(
+    `https://jsonplaceholder.typicode.com/posts/${postNumber}`,
+  );
+
+  const { title, body } = await postData.json();
+
   const response = await admin.graphql(
     `#graphql
       mutation populateProduct($product: ProductCreateInput!) {
@@ -52,7 +56,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     {
       variables: {
         product: {
-          title: `${color} Snowboard`,
+          title: `${title}`,
+          descriptionHtml: `<pre>${body}</pre>`,
         },
       },
     },
@@ -224,108 +229,6 @@ export default function Index() {
                 )}
               </BlockStack>
             </Card>
-          </Layout.Section>
-          <Layout.Section variant="oneThird">
-            <BlockStack gap="500">
-              <Card>
-                <BlockStack gap="200">
-                  <Text as="h2" variant="headingMd">
-                    App template specs
-                  </Text>
-                  <BlockStack gap="200">
-                    <InlineStack align="space-between">
-                      <Text as="span" variant="bodyMd">
-                        Framework
-                      </Text>
-                      <Link
-                        url="https://remix.run"
-                        target="_blank"
-                        removeUnderline
-                      >
-                        Remix
-                      </Link>
-                    </InlineStack>
-                    <InlineStack align="space-between">
-                      <Text as="span" variant="bodyMd">
-                        Database
-                      </Text>
-                      <Link
-                        url="https://www.prisma.io/"
-                        target="_blank"
-                        removeUnderline
-                      >
-                        Prisma
-                      </Link>
-                    </InlineStack>
-                    <InlineStack align="space-between">
-                      <Text as="span" variant="bodyMd">
-                        Interface
-                      </Text>
-                      <span>
-                        <Link
-                          url="https://polaris.shopify.com"
-                          target="_blank"
-                          removeUnderline
-                        >
-                          Polaris
-                        </Link>
-                        {", "}
-                        <Link
-                          url="https://shopify.dev/docs/apps/tools/app-bridge"
-                          target="_blank"
-                          removeUnderline
-                        >
-                          App Bridge
-                        </Link>
-                      </span>
-                    </InlineStack>
-                    <InlineStack align="space-between">
-                      <Text as="span" variant="bodyMd">
-                        API
-                      </Text>
-                      <Link
-                        url="https://shopify.dev/docs/api/admin-graphql"
-                        target="_blank"
-                        removeUnderline
-                      >
-                        GraphQL API
-                      </Link>
-                    </InlineStack>
-                  </BlockStack>
-                </BlockStack>
-              </Card>
-              <Card>
-                <BlockStack gap="200">
-                  <Text as="h2" variant="headingMd">
-                    Next steps
-                  </Text>
-                  <List>
-                    <List.Item>
-                      Build an{" "}
-                      <Link
-                        url="https://shopify.dev/docs/apps/getting-started/build-app-example"
-                        target="_blank"
-                        removeUnderline
-                      >
-                        {" "}
-                        example app
-                      </Link>{" "}
-                      to get started
-                    </List.Item>
-                    <List.Item>
-                      Explore Shopify’s API with{" "}
-                      <Link
-                        url="https://shopify.dev/docs/apps/tools/graphiql-admin-api"
-                        target="_blank"
-                        removeUnderline
-                      >
-                        GraphiQL
-                      </Link>
-                    </List.Item>
-                  </List>
-                </BlockStack>
-              </Card>
-            </BlockStack>
           </Layout.Section>
         </Layout>
       </BlockStack>
