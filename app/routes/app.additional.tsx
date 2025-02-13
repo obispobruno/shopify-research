@@ -1,83 +1,120 @@
 import {
-  Box,
   Card,
   Layout,
-  Link,
   List,
   Page,
   Text,
   BlockStack,
+  Button,
+  Select,
+  FormLayout,
+  Spinner,
+  Banner,
 } from "@shopify/polaris";
 import { TitleBar } from "@shopify/app-bridge-react";
+import { useCallback, useState } from "react";
+import type { Product } from "app/types/admin.types";
+import ForecastChart from "app/components/ForecastChart";
+import { useQuery } from "@tanstack/react-query";
+
+const fetchForecast = async (productId: string, months: string) => {
+  const response = await fetch(`/api/forecast/${productId}?months=${months}`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch forecast data");
+  }
+  return response.json();
+};
 
 export default function AdditionalPage() {
+  const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
+  const [period, setPeriod] = useState("3");
+
+  const {
+    data: forecastData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["forecast", selectedProducts[0]?.id, period],
+    queryFn: () =>
+      selectedProducts[0]?.id
+        ? fetchForecast(selectedProducts[0].id, period)
+        : null,
+    enabled: !!selectedProducts[0]?.id,
+  });
+
+  const handleProductSelect = async () => {
+    const selected = await shopify.resourcePicker({ type: "product" });
+    if (selected) {
+      setSelectedProducts(selected as any);
+    }
+  };
+
+  const handleSelectChange = useCallback(
+    (value: string) => setPeriod(value),
+    [],
+  );
+
+  const options = [
+    { label: "3 months", value: "3" },
+    { label: "6 months", value: "6" },
+    { label: "12 months", value: "12" },
+  ];
+
   return (
     <Page>
-      <TitleBar title="Additional page" />
+      <TitleBar title="Sales Forecast" />
       <Layout>
         <Layout.Section>
-          <Card>
-            <BlockStack gap="300">
-              <Text as="p" variant="bodyMd">
-                The app template comes with an additional page which
-                demonstrates how to create multiple pages within app navigation
-                using{" "}
-                <Link
-                  url="https://shopify.dev/docs/apps/tools/app-bridge"
-                  target="_blank"
-                  removeUnderline
-                >
-                  App Bridge
-                </Link>
-                .
-              </Text>
-              <Text as="p" variant="bodyMd">
-                To create your own page and have it show up in the app
-                navigation, add a page inside <Code>app/routes</Code>, and a
-                link to it in the <Code>&lt;NavMenu&gt;</Code> component found
-                in <Code>app/routes/app.jsx</Code>.
-              </Text>
-            </BlockStack>
-          </Card>
-        </Layout.Section>
-        <Layout.Section variant="oneThird">
-          <Card>
-            <BlockStack gap="200">
-              <Text as="h2" variant="headingMd">
-                Resources
-              </Text>
-              <List>
-                <List.Item>
-                  <Link
-                    url="https://shopify.dev/docs/apps/design-guidelines/navigation#app-nav"
-                    target="_blank"
-                    removeUnderline
-                  >
-                    App nav best practices
-                  </Link>
-                </List.Item>
-              </List>
-            </BlockStack>
-          </Card>
+          <BlockStack gap="400">
+            <Card>
+              <FormLayout>
+                <Text as="h2" variant="headingMd">
+                  Product
+                </Text>
+                <List>
+                  {selectedProducts.map((product) => (
+                    <List.Item key={product.id}>{product.title}</List.Item>
+                  ))}
+                </List>
+                <Button variant="primary" onClick={handleProductSelect}>
+                  Select Product
+                </Button>
+                <Text as="h2" variant="headingMd">
+                  Period
+                </Text>
+                <Select
+                  label=""
+                  options={options}
+                  onChange={handleSelectChange}
+                  value={period}
+                />
+              </FormLayout>
+            </Card>
+            <Card>
+              <BlockStack gap="400">
+                <Text as="h2" variant="headingMd">
+                  Sales Forecast
+                </Text>
+                {error && (
+                  <Banner>
+                    An error occurred while fetching the forecast data
+                  </Banner>
+                )}
+                {isLoading ? (
+                  <div style={{ textAlign: "center", padding: "2rem" }}>
+                    <Spinner
+                      accessibilityLabel="Loading forecast data"
+                      size="large"
+                    />
+                  </div>
+                ) : (
+                  <ForecastChart data={forecastData?.data || []} />
+                )}
+              </BlockStack>
+            </Card>
+          </BlockStack>
         </Layout.Section>
       </Layout>
     </Page>
-  );
-}
-
-function Code({ children }: { children: React.ReactNode }) {
-  return (
-    <Box
-      as="span"
-      padding="025"
-      paddingInlineStart="100"
-      paddingInlineEnd="100"
-      background="bg-surface-active"
-      borderWidth="025"
-      borderColor="border"
-      borderRadius="100"
-    >
-      <code>{children}</code>
-    </Box>
   );
 }

@@ -64,8 +64,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   );
   const responseJson = await response.json();
 
-  const product = responseJson.data!.productCreate!.product!;
-  const variantId = product.variants.edges[0]!.node!.id!;
+  const product = responseJson.data?.productCreate?.product;
+  const variantId = product?.variants.edges[0].node.id;
 
   const variantResponse = await admin.graphql(
     `#graphql
@@ -81,7 +81,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     }`,
     {
       variables: {
-        productId: product.id,
+        productId: product!.id,
         variants: [{ id: variantId, price: "100.00" }],
       },
     },
