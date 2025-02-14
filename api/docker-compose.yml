@@ -1,0 +1,11 @@
+services:
+  api:
+    container_name: api
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./:/app
+    environment:
+      - ENVIRONMENT=development
+    restart: unless-stopped

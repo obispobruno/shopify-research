@@ -16,11 +16,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 def generate_mock_data(product_id: str, months: int) -> List[dict]:
     data = []
     base_value = random.randint(100, 1000)
     trend = random.uniform(0.98, 1.02)  # Slight trend up or down
-    seasonality = [1.2, 1.1, 0.9, 0.8, 0.9, 1.0, 1.1, 1.2, 1.1, 0.9, 0.8, 0.9]  # Monthly seasonality
+    seasonality = [1.2, 1.1, 0.9, 0.8, 0.9, 1.0, 1.1, 1.2, 1.1, 0.9, 0.8, 0.9]
 
     start_date = datetime.now() - relativedelta(months=months)
 
@@ -59,6 +60,7 @@ def generate_mock_data(product_id: str, months: int) -> List[dict]:
 
     return data
 
+
 @app.get("/api/forecast/{product_id}")
 async def get_forecast(
     product_id: str,
@@ -71,6 +73,7 @@ async def get_forecast(
         "data": data
     }
 
+
 @app.get("/api/health")
 async def health_check():
     return {"status": "healthy"}
@@ -78,4 +81,3 @@ async def health_check():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
-

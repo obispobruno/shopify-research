@@ -18,7 +18,9 @@ import ForecastChart from "app/components/ForecastChart";
 import { useQuery } from "@tanstack/react-query";
 
 const fetchForecast = async (productId: string, months: string) => {
-  const response = await fetch(`/api/forecast/${productId}?months=${months}`);
+  const response = await fetch(
+    `https://api.brunosv.online/api/forecast/123?months=${months}`,
+  );
   if (!response.ok) {
     throw new Error("Failed to fetch forecast data");
   }
